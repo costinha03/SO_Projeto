@@ -1,38 +1,70 @@
 #!/bin/bash
 
-# Função que calcula o tamanho dos arquivos que correspondem à expressão regular
-calculate_size() {
-  local dir="$1"
-  local regex="$2"
+directory="."
+regex=".*"
+min_size=0
+max_date=""
+sort_flag=""
+limit=99999
 
-  find "$dir" -type f -name "$regex" -exec du -b {} + | awk '{s+=$1} END {print s}'
+# obter a data atual
+build_date=$(date +'%Y%m%d')
+
+# calcular o tamanho de pastas
+calculate_folder_sizes() {
+  local search_directory="$1"
+
+
+  find "$search_directory" -type f | grep -E "$regex" | xargs -I {} dirname {} | sort -u | while read -r folder; do
+    folder_size=$(du -s "$folder" 2>/dev/null | cut -f1)
+    echo "$folder_size $folder"
+  done
 }
 
-# Verificar se o número de argumentos é válido
-if [ "$#" -ne 3 ]; then
-  echo "Uso: $0 -n <expressão-regular> <diretório>"
-  exit 1
+# Função para exibir "NA" 
+print_size() {
+  local size="$1"
+  if [ -z "$size" ]; then
+    echo "NA"
+  else
+    echo "$size"
+  fi
+}
+
+while getopts "n:d:s:ra:l:" opt; do # opções
+  case $opt in
+    n)
+      regex="$OPTARG"
+      ;;
+    d)
+      max_date="$OPTARG"
+      ;;
+    s)
+      min_size="$OPTARG"
+      ;;
+    r)
+      sort_flag="-r"
+      ;;
+    a)
+      sort_flag="-a"
+      ;;
+    l)
+      limit="$OPTARG"
+      ;;
+    \?)
+      usage
+      ;;
+  esac
+done
+shift $((OPTIND-1))
+
+# verificar o diretório 
+if [ "$1" ]; then
+  directory="$1"
 fi
 
-# Verificar se a opção é -n
-if [ "$1" != "-n" ]; then
-  echo "Opção inválida. Use -n para especificar a expressão regular."
-  exit 1
-fi
+# Cabeçalho 
+printf "SIZE NAME %s -n %s %s\n" "$build_date" "$regex" "$directory"
 
-# Atribuir a expressão regular e o diretório a variáveis
-regex="$2"
-dir="$3"
-
-# Verificar se o diretório existe
-if [ ! -d "$dir" ]; then
-  echo "O diretório especificado não existe."
-  exit 1
-fi
-
-# Chamar a função para calcular o tamanho dos arquivos
-size=$(calculate_size "$dir" "$regex")
-
-# Exibir os resultados
-echo "SIZE NAME $(date +"%Y%m%d") -n $regex $dir"
-echo "$size $dir"
+# tamanhos das pastas
+calculate_folder_sizes "$directory" | sort -n $sort_flag | head -n $limit
