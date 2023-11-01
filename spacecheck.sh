@@ -24,7 +24,7 @@ calculate_folder_sizes() {
 # Função para exibir "NA" 
 print_size() {
   local size="$1"
-  if [ -z "$size" ]; then
+  if [ -z "$size" ]; then 
     echo "NA"
   else
     echo "$size"
