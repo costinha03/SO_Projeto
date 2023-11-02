@@ -7,31 +7,35 @@ max_date=""
 sort_flag=""
 limit=99999
 
-# obter a data atual
+# Obter a data atual
 build_date=$(date +'%Y%m%d')
 
-# calcular o tamanho de pastas
+# Função para calcular os tamanhos das pastas
 calculate_folder_sizes() {
   local search_directory="$1"
 
-
   find "$search_directory" -type f | grep -E "$regex" | xargs -I {} dirname {} | sort -u | while read -r folder; do
     folder_size=$(du -s "$folder" 2>/dev/null | cut -f1)
-    echo "$folder_size $folder"
+    if [ -z "$folder_size" ]; then
+      folder_size=0
+    fi
+    if [ "$folder_size" -ge "$min_size" ]; then
+      echo "$folder_size $folder"
+    fi
   done
 }
 
-# Função para exibir "NA" 
+# Função para exibir "NA" se o tamanho for indefinido (vazio)
 print_size() {
   local size="$1"
-  if [ -z "$size" ]; then 
+  if [ -z "$size" ]; then
     echo "NA"
   else
     echo "$size"
   fi
 }
 
-while getopts "n:d:s:ra:l:" opt; do # opções
+while getopts "n:d:s:ra:l:" opt; do
   case $opt in
     n)
       regex="$OPTARG"
@@ -58,15 +62,13 @@ while getopts "n:d:s:ra:l:" opt; do # opções
 done
 shift $((OPTIND-1))
 
-# verificar o diretório 
+# Verificar o diretório
 if [ "$1" ]; then
   directory="$1"
 fi
 
-
 # Cabeçalho
-# Cabeçalho
-printf "SIZE NAME $build_date"
+printf "SIZE NAME %s" "$build_date"
 if [ "$sort_flag" == "-r" ]; then
   printf " -r"
 elif [ "$sort_flag" == "-a" ]; then
@@ -75,10 +77,10 @@ fi
 if [ "$regex" != ".*" ]; then
   printf " -n %s" "$regex"
 fi
-if [ "$max_date" != "" ]; then
+if [ -n "$max_date" ]; then
   printf " -d %s" "$max_date"
 fi
-if [ "$min_size" != "0" ]; then
+if [ "$min_size" -ne 0 ]; then
   printf " -s %s" "$min_size"
 fi
 if [ "$limit" -ne 99999 ]; then
@@ -87,7 +89,5 @@ fi
 
 printf " %s\n" "$directory"
 
-
-
-# tamanhos das pastas
-calculate_folder_sizes "$directory" | sort -n $sort_flag | head -n $limit
+# Tamanhos das pastas
+calculate_folder_sizes "$directory" | sort -n $sort_flag | head -n "$limit"
