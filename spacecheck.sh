@@ -63,8 +63,31 @@ if [ "$1" ]; then
   directory="$1"
 fi
 
-# Cabeçalho 
-printf "SIZE NAME %s -n %s %s\n" "$build_date" "$regex" "$directory"
+
+# Cabeçalho
+# Cabeçalho
+printf "SIZE NAME $build_date"
+if [ "$sort_flag" == "-r" ]; then
+  printf " -r"
+elif [ "$sort_flag" == "-a" ]; then
+  printf " -a"
+fi
+if [ "$regex" != ".*" ]; then
+  printf " -n %s" "$regex"
+fi
+if [ "$max_date" != "" ]; then
+  printf " -d %s" "$max_date"
+fi
+if [ "$min_size" != "0" ]; then
+  printf " -s %s" "$min_size"
+fi
+if [ "$limit" -ne 99999 ]; then
+  printf " -l %s" "$limit"
+fi
+
+printf " %s\n" "$directory"
+
+
 
 # tamanhos das pastas
 calculate_folder_sizes "$directory" | sort -n $sort_flag | head -n $limit
