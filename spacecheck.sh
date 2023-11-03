@@ -4,8 +4,9 @@ directory="."
 regex=".*"
 min_size=0
 max_date=""
-sort_flag=""
+reverse_sort="false"
 limit=99999
+sort_by_name="false"
 
 # Obter a data atual
 build_date=$(date +'%Y%m%d')
@@ -35,7 +36,7 @@ print_size() {
   fi
 }
 
-while getopts "n:d:s:ra:l:" opt; do
+while getopts "n:d:s:ral:" opt; do
   case $opt in
     n)
       regex="$OPTARG"
@@ -47,10 +48,10 @@ while getopts "n:d:s:ra:l:" opt; do
       min_size="$OPTARG"
       ;;
     r)
-      sort_flag="-r"
+      reverse_sort="true"
       ;;
     a)
-      sort_flag="-a"
+      sort_by_name="true"
       ;;
     l)
       limit="$OPTARG"
@@ -67,32 +68,40 @@ if [ "$1" ]; then
   directory="$1"
 fi
 
+
 # Cabeçalho
-printf "SIZE NAME %s" "$build_date"
-if [ "$sort_flag" == "-r" ]; then
-  printf " -r"
-elif [ "$sort_flag" == "-a" ]; then
-  printf " -a"
+header="SIZE NAME $build_date"
+if [ "$reverse_sort" == "true" ]; then
+  header="$header -r"
+fi
+if [ "$sort_by_name" == "true" ]; then
+  header="$header -a"
 fi
 if [ "$regex" != ".*" ]; then
-  printf " -n %s" "$regex"
+  header="$header -n $regex"
 fi
 if [ -n "$max_date" ]; then
-  printf " -d %s" "$max_date"
+  header="$header -d $max_date"
 fi
 if [ "$min_size" -ne 0 ]; then
-  printf " -s %s" "$min_size"
+  header="$header -s $min_size"
 fi
 if [ "$limit" -ne 99999 ]; then
-  printf " -l %s" "$limit"
+  header="$header -l $limit"
 fi
 
-printf " %s\n" "$directory"
+printf "%s %s\n" "$header" "$directory"
+
+
+
 
 # Tamanhos das pastas
-# Modifique a chamada da função calculate_folder_sizes para usar a ordenação padrão (decrescente)
-if [ "$sort_flag" == "-r" ]; then
-  calculate_folder_sizes "$directory" | sort -n | head -n "$limit"
+if [ "$sort_by_name" == "true" ]; then
+  calculate_folder_sizes "$directory" | sort -k2 | head -n "$limit"
 else
-  calculate_folder_sizes "$directory" | sort -n -r | head -n "$limit"
+  if [ "$reverse_sort" == "true" ]; then
+    calculate_folder_sizes "$directory" | sort -n | head -n "$limit"
+  else
+    calculate_folder_sizes "$directory" | sort -n -r | head -n "$limit"
+  fi
 fi
