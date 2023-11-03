@@ -90,4 +90,9 @@ fi
 printf " %s\n" "$directory"
 
 # Tamanhos das pastas
-calculate_folder_sizes "$directory" | sort -n $sort_flag | head -n "$limit"
+# Modifique a chamada da função calculate_folder_sizes para usar a ordenação padrão (decrescente)
+if [ "$sort_flag" == "-r" ]; then
+  calculate_folder_sizes "$directory" | sort -n | head -n "$limit"
+else
+  calculate_folder_sizes "$directory" | sort -n -r | head -n "$limit"
+fi
