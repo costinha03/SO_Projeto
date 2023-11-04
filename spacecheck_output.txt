@@ -1,0 +1,6 @@
+60 /home/diogo/Desktop/SO/Práticas/GitHubSO/Aula02
+84 /home/diogo/Desktop/SO/Práticas/GitHubSO/Aula03
+28 /home/diogo/Desktop/SO/Práticas/GitHubSO/Aula04
+64 /home/diogo/Desktop/SO/Práticas/GitHubSO/.git/hooks
+780 /home/diogo/Desktop/SO/Práticas/Projeto
+64 /home/diogo/Desktop/SO/Práticas/Projeto/.git/hooks
