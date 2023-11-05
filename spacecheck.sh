@@ -16,7 +16,8 @@ build_date=$(date +'%Y%m%d')
 calculate_folder_sizes() {
   local search_directory="$1"
 
-  find "$search_directory" -type f | grep -E "$regex" | xargs -I {} dirname {} | sort -u | while read -r folder; do
+  # Encontre os arquivos que correspondem ao regex e foram modificados antes da data máxima
+  find "$search_directory" -type f -mtime +$(( ( $(date +%s) - $(date -d "$max_date" +%s) ) / 86400 )) | grep -E "$regex" | xargs -I {} dirname {} | sort -u | while read -r folder; do
     folder_size=$(du -s "$folder" 2>/dev/null | cut -f1)
     if [ -z "$folder_size" ]; then
       folder_size=0
@@ -63,6 +64,7 @@ while getopts "n:d:s:ral:" opt; do
   esac
 done
 shift $((OPTIND-1))
+
 
 # Verificar o diretório
 if [ "$1" ]; then
