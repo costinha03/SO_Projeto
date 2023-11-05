@@ -7,7 +7,7 @@ max_date=""
 reverse_sort="false"
 limit=99999
 sort_by_name="false"
-output_file="spacecheck_$(date +'%Y%m%d%H%M%S').txt" 
+output_file="spacecheck_$(date +'%Y%m%d%H%M%S')"
 
 # Obter a data atual
 build_date=$(date +'%Y%m%d')
@@ -69,7 +69,6 @@ if [ "$1" ]; then
   directory="$1"
 fi
 
-
 # Cabeçalho
 header="SIZE NAME $build_date"
 if [ "$reverse_sort" == "true" ]; then
@@ -93,19 +92,13 @@ fi
 
 printf "%s %s\n" "$header" "$directory"
 
-
-
-
 # Tamanhos das pastas
 if [ "$sort_by_name" == "true" ]; then
   calculate_folder_sizes "$directory" | sort -k2 | head -n "$limit" | tee "$output_file"
 else
   if [ "$reverse_sort" == "true" ]; then
     calculate_folder_sizes "$directory" | sort -n | head -n "$limit"  | tee "$output_file"
-
   else
     calculate_folder_sizes "$directory" | sort -n -r | head -n "$limit" | tee "$output_file"
-
   fi
 fi
-
