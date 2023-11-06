@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Default sorting order
+
 sorting_order="default"
 header_printed_default=false
 header_printed_reverse=false
@@ -8,99 +8,96 @@ header_printed_alphabetical=false
 
 # Function to print the header if it hasn't been printed for a specific sorting order
 print_header() {
-  local order="$1"
-  if [ "$order" == "default" ] && [ "$header_printed_default" == false ]; then
+  local order="$1" 
+  if [ "$order" == "default" ] && [ "$header_printed_default" == false ]; then # Se a ordem for padrão, imprima o cabeçalho
     echo "SIZE NAME"
     header_printed_default=true
-  elif [ "$order" == "reverse" ] && [ "$header_printed_reverse" == false ]; then
+  elif [ "$order" == "reverse" ] && [ "$header_printed_reverse" == false ]; then # Se a ordem for inversa, imprima o cabeçalho
     echo "SIZE NAME"
     header_printed_reverse=true
-  elif [ "$order" == "alphabetical" ] && [ "$header_printed_alphabetical" == false ]; then
+  elif [ "$order" == "alphabetical" ] && [ "$header_printed_alphabetical" == false ]; then # Se a ordem for alfabética, imprima o cabeçalho
     echo "SIZE NAME"
-    header_printed_alphabetical=true
+    header_printed_alphabetical=true 
   fi
 }
 
 # Parse command-line options
-while getopts "ra" option; do
+while getopts "ra" option; do # Obter as opções da linha de comando -r e -a
   case $option in
     r)
-      sorting_order="reverse"
+      sorting_order="reverse" # ordem inversa
       ;;
     a)
-      sorting_order="alphabetical"
+      sorting_order="alphabetical" # ordem alfabética
       ;;
     *)
-      echo "Usage: $0 [-r] [-a] <file1> <file2>"
+      echo "Usage: $0 [-r] [-a] <file1> <file2>" # Se a opção for diferente de -r e -a, imprima a mensagem de erro
       exit 1
       ;;
   esac
 done
 
-# Remove the processed options from the argument list
 shift $((OPTIND - 1))
 
-# Check if two filenames are provided as arguments
-if [ $# -ne 2 ]; then
-  echo "Usage: $0 [-r] [-a] <file1> <file2>"
+
+if [ $# -ne 2 ]; then # Se o número de argumentos for diferente de 2, imprima a mensagem de erro (ne = not equal)
+  echo "Usage: $0 [-r] [-a] <file1> <file2>" # Se a opção for diferente de -r e -a, imprima a mensagem de erro
   exit 1
 fi
 
-# Read the two file names from command-line arguments
+# Lê dois arquivos vindo dos argumentos da linha de comando
 file1="$1"
 file2="$2"
 
-# Function to compare two files and display the differences
+# Função para comparar os arquivos
 compare_files() {
-  # Create associative arrays to store directory sizes from both files
-  declare -A dir_sizes1
-  declare -A dir_sizes2
 
-  # Read the first file and store directory sizes
-  while read -r size dir; do
-    dir_sizes1["$dir"]=$size
-  done < "$file1"
+  declare -A dir_sizes1 
+  declare -A dir_sizes2 
 
-  # Read the second file and store directory sizes
-  while read -r size dir; do
-    dir_sizes2["$dir"]=$size
+
+  while read -r size dir; do # Lê o primeiro arquivo e armazena os tamanhos dos diretórios
+    dir_sizes1["$dir"]=$size # Armazena o tamanho do diretório no array associativo dir_sizes1
+  done < "$file1"  
+
+
+  while read -r size dir; do # Lê o segundo arquivo e armazena os tamanhos dos diretórios
+    dir_sizes2["$dir"]=$size # Armazena o tamanho do diretório no array associativo dir_sizes2
   done < "$file2"
 
-  # Compare directory sizes and display the differences
-  for dir in "${!dir_sizes1[@]}"; do
-    size1="${dir_sizes1[$dir]}"
-    size2="${dir_sizes2[$dir]}"
+
+  for dir in "${!dir_sizes1[@]}"; do # Percorre o array associativo dir_sizes1
+    size1="${dir_sizes1[$dir]}" # Armazena o tamanho do diretório no array associativo dir_sizes1
+    size2="${dir_sizes2[$dir]}" # Armazena o tamanho do diretório no array associativo dir_sizes2
 
     if [ -z "$size2" ]; then
-      # Directory is present in file1 but not in file2
-      echo "$size1 $dir REMOVED"
+      # Diretorio presente apenas no primeiro arquivo
+      echo "$size1 $dir REMOVED" # Imprime o tamanho do diretório e o nome do diretório com a mensagem REMOVED
     else
-      # Directory is present in both files
-      size_diff=$((size2 - size1))
-      echo "$size_diff $dir"
+      # Diretorio presente em ambos os arquivos
+      size_diff=$((size2 - size1)) # Calcula a diferença entre os tamanhos dos diretórios (size2 - size1)
+      echo "$size_diff $dir" # Imprime a diferença entre os tamanhos dos diretórios e o nome do diretório
     fi
   done
 
-  # Check for directories present in file2 but not in file1
-  for dir in "${!dir_sizes2[@]}"; do
-    if [ -z "${dir_sizes1[$dir]}" ]; then
-      echo "${dir_sizes2[$dir]} $dir NEW"
+  # Diretorios presentes apenas no segundo arquivo
+  for dir in "${!dir_sizes2[@]}"; do # Percorre o array associativo dir_sizes2
+    if [ -z "${dir_sizes1[$dir]}" ]; then # Se o tamanho do diretório for vazio (não presente no primeiro arquivo)
+      echo "${dir_sizes2[$dir]} $dir NEW" # Imprime o tamanho do diretório e o nome do diretório com a mensagem NEW
     fi
   done
 }
 
-# Call the compare_files function with the two input files and sorting options
-if [ "$sorting_order" == "reverse" ]; then
-  # Sort directories in reverse order, including the header as the first line if not already printed
-  print_header "reverse"
-  compare_files "$file1" "$file2" | sort -rn
-elif [ "$sorting_order" == "alphabetical" ]; then
-  # Sort directories in alphabetical order, including the header as the first line if not already printed
-  print_header "alphabetical"
-  compare_files "$file1" "$file2" | sort -k2
+# Chama a função compare_files e ordena os diretórios de acordo com a opção escolhida (default, ordem inversa ou ordem alfabética)
+if [ "$sorting_order" == "reverse" ]; then # Se a ordem for inversa
+  print_header "reverse" # Imprime o cabeçalho
+  compare_files "$file1" "$file2" | sort -rn # Ordena os diretórios em ordem inversa e imprime o tamanho e o nome do diretório
+elif [ "$sorting_order" == "alphabetical" ]; then # Se a ordem for alfabética
+  print_header "alphabetical" # Imprime o cabeçalho
+  compare_files "$file1" "$file2" | sort -k2 # Ordena os diretórios em ordem alfabética e imprime o tamanho e o nome do diretório
 else
-  # Default order (as in the original script), including the header as the first line if not already printed
-  print_header "default"
-  compare_files "$file1" "$file2"
+# Se a ordem for padrão
+  print_header "default" # Imprime o cabeçalho
+  compare_files "$file1" "$file2" # Imprime o tamanho e o nome do diretório 
 fi
 
