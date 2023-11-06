@@ -1,8 +1,48 @@
 #!/bin/bash
 
+# Default sorting order
+sorting_order="default"
+header_printed_default=false
+header_printed_reverse=false
+header_printed_alphabetical=false
+
+# Function to print the header if it hasn't been printed for a specific sorting order
+print_header() {
+  local order="$1"
+  if [ "$order" == "default" ] && [ "$header_printed_default" == false ]; then
+    echo "SIZE NAME"
+    header_printed_default=true
+  elif [ "$order" == "reverse" ] && [ "$header_printed_reverse" == false ]; then
+    echo "SIZE NAME"
+    header_printed_reverse=true
+  elif [ "$order" == "alphabetical" ] && [ "$header_printed_alphabetical" == false ]; then
+    echo "SIZE NAME"
+    header_printed_alphabetical=true
+  fi
+}
+
+# Parse command-line options
+while getopts "ra" option; do
+  case $option in
+    r)
+      sorting_order="reverse"
+      ;;
+    a)
+      sorting_order="alphabetical"
+      ;;
+    *)
+      echo "Usage: $0 [-r] [-a] <file1> <file2>"
+      exit 1
+      ;;
+  esac
+done
+
+# Remove the processed options from the argument list
+shift $((OPTIND - 1))
+
 # Check if two filenames are provided as arguments
 if [ $# -ne 2 ]; then
-  echo "Usage: $0 <file1> <file2>"
+  echo "Usage: $0 [-r] [-a] <file1> <file2>"
   exit 1
 fi
 
@@ -10,15 +50,8 @@ fi
 file1="$1"
 file2="$2"
 
-
-
 # Function to compare two files and display the differences
 compare_files() {
-  local file1="$1"
-  local file2="$2"
-
-  echo "SIZE NAME"
-
   # Create associative arrays to store directory sizes from both files
   declare -A dir_sizes1
   declare -A dir_sizes2
@@ -56,5 +89,18 @@ compare_files() {
   done
 }
 
-# Call the compare_files function with the two input files
-compare_files "$file1" "$file2"
+# Call the compare_files function with the two input files and sorting options
+if [ "$sorting_order" == "reverse" ]; then
+  # Sort directories in reverse order, including the header as the first line if not already printed
+  print_header "reverse"
+  compare_files "$file1" "$file2" | sort -rn
+elif [ "$sorting_order" == "alphabetical" ]; then
+  # Sort directories in alphabetical order, including the header as the first line if not already printed
+  print_header "alphabetical"
+  compare_files "$file1" "$file2" | sort -k2
+else
+  # Default order (as in the original script), including the header as the first line if not already printed
+  print_header "default"
+  compare_files "$file1" "$file2"
+fi
+
