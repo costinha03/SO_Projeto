@@ -44,10 +44,6 @@ calculate_folder_sizes() {
 }
 
 
-
-
-
-
 while getopts "n:d:s:ral:" opt; do 
   case $opt in
     n)
