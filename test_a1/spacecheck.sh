@@ -17,26 +17,36 @@ calculate_folder_sizes() {
   local search_directory="$1" # Diretório para pesquisar
 
   # Encontre todas as pastas no diretório
-  find "$search_directory" -type d | 
+  find "$search_directory" -type d 2>/dev/null | 
   while read -r folder; # Para cada pasta
   do
-    # Filtrar os arquivos que correspondem ao regex e foram modificados antes da data máxima
-    local matching_files=$(find "$folder" -type f -mtime +$(( ( $(date +%s) - $(date -d "$max_date" +%s) ) / 86400 )) | grep -E "$regex")
+    # Verifica a permissão de leitura na pasta
+    if [ -r "$folder" ]; then
+      # Filtrar os arquivos que correspondem ao regex e foram modificados antes da data máxima
+      local matching_files=$(find "$folder" -type f -mtime +$(( ( $(date +%s) - $(date -d "$max_date" +%s) ) / 86400 )) 2>/dev/null | grep -E "$regex")
 
-    if [ -n "$matching_files" ]; then
-      folder_size=$(du -sb "$folder" 2>/dev/null | cut -f1) # Obter o tamanho da pasta em bytes
-      if [ -z "$folder_size" ]; then # Se o tamanho da pasta for indefinido (vazio), defina-o como 0
-        folder_size=0
-      fi
-      if [ "$folder_size" -ge "$min_size" ]; then # Se o tamanho da pasta for maior ou igual ao tamanho mínimo
-        echo "$folder_size $folder" # Imprimir o tamanho e o nome da pasta
+      if [ -n "$matching_files" ]; then
+        folder_size=$(find "$folder" -type f -exec du -b {} + 2>/dev/null | awk '{total += $1} END {print total}')
+        if [ -z "$folder_size" ]; then # Se o tamanho da pasta for indefinido (vazio), defina-o como 0
+          folder_size=0
+        fi
+        if [ "$folder_size" -ge "$min_size" ]; then # Se o tamanho da pasta for maior ou igual ao tamanho mínimo
+          echo "$folder_size $folder" # Imprimir o tamanho e o nome da pasta
+        fi
+      else
+        # Se não houver arquivos que atendam aos critérios, defina o tamanho da pasta como 0
+        echo "0 $folder"
       fi
     else
-      # Se não houver arquivos que atendam aos critérios, defina o tamanho da pasta como 0
-      echo "0 $folder"
+      echo "NA $folder" # Permissão recusada
     fi
   done
 }
+
+
+
+
+
 
 while getopts "n:d:s:ral:" opt; do 
   case $opt in
