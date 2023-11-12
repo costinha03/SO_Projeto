@@ -2,24 +2,6 @@
 
 
 sorting_order="default"
-header_printed_default=false
-header_printed_reverse=false
-header_printed_alphabetical=false
-
-# Function to print the header if it hasn't been printed for a specific sorting order
-print_header() {
-  local order="$1" 
-  if [ "$order" == "default" ] && [ "$header_printed_default" == false ]; then # Se a ordem for padrão, imprima o cabeçalho
-    echo "SIZE NAME"
-    header_printed_default=true
-  elif [ "$order" == "reverse" ] && [ "$header_printed_reverse" == false ]; then # Se a ordem for inversa, imprima o cabeçalho
-    echo "SIZE NAME"
-    header_printed_reverse=true
-  elif [ "$order" == "alphabetical" ] && [ "$header_printed_alphabetical" == false ]; then # Se a ordem for alfabética, imprima o cabeçalho
-    echo "SIZE NAME"
-    header_printed_alphabetical=true 
-  fi
-}
 
 # Parse command-line options
 while getopts "ra" option; do # Obter as opções da linha de comando -r e -a
@@ -65,7 +47,7 @@ compare_files() {
     dir_sizes2["$dir"]=$size # Armazena o tamanho do diretório no array associativo dir_sizes2
   done < "$file2"
 
-
+  echo "SIZE NAME" #imprime o cabeçãlho
   for dir in "${!dir_sizes1[@]}"; do # Percorre o array associativo dir_sizes1
     size1="${dir_sizes1[$dir]}" # Armazena o tamanho do diretório no array associativo dir_sizes1
     size2="${dir_sizes2[$dir]}" # Armazena o tamanho do diretório no array associativo dir_sizes2
@@ -90,14 +72,11 @@ compare_files() {
 
 # Chama a função compare_files e ordena os diretórios de acordo com a opção escolhida (default, ordem inversa ou ordem alfabética)
 if [ "$sorting_order" == "reverse" ]; then # Se a ordem for inversa
-  print_header "reverse" # Imprime o cabeçalho
   compare_files "$file1" "$file2" | sort -rn # Ordena os diretórios em ordem inversa e imprime o tamanho e o nome do diretório
 elif [ "$sorting_order" == "alphabetical" ]; then # Se a ordem for alfabética
-  print_header "alphabetical" # Imprime o cabeçalho
   compare_files "$file1" "$file2" | sort -k2 # Ordena os diretórios em ordem alfabética e imprime o tamanho e o nome do diretório
 else
 # Se a ordem for padrão
-  print_header "default" # Imprime o cabeçalho
   compare_files "$file1" "$file2" # Imprime o tamanho e o nome do diretório 
 fi
 
