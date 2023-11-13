@@ -42,12 +42,12 @@ compare_files() {
     dir_sizes1["$dir"]=$size # Armazena o tamanho do diretório no array associativo dir_sizes1
   done < "$file1"  
 
-
   while read -r size dir; do # Lê o segundo arquivo e armazena os tamanhos dos diretórios
     dir_sizes2["$dir"]=$size # Armazena o tamanho do diretório no array associativo dir_sizes2
   done < "$file2"
 
   echo "SIZE NAME" #imprime o cabeçãlho
+  
   for dir in "${!dir_sizes1[@]}"; do # Percorre o array associativo dir_sizes1
     size1="${dir_sizes1[$dir]}" # Armazena o tamanho do diretório no array associativo dir_sizes1
     size2="${dir_sizes2[$dir]}" # Armazena o tamanho do diretório no array associativo dir_sizes2
