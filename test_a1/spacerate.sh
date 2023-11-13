@@ -1,19 +1,22 @@
 #!/bin/bash
 
-sorting_order="default"
+sorting_order="default" 
 header_printed=false
 
-# Parse command-line options
+# opções da linha de comando
 while getopts "ra" option; do
   case $option in
     r)
+      # Se a opção -r foi fornecida, a ordem de classificação será inversa
       sorting_order="reverse"
       ;;
     a)
+      # Se a opção -a foi fornecida, a ordem de classificação será alfabética
       sorting_order="alphabetical"
       ;;
     *)
-      echo "Usage: $0 [-r] [-a] <file1> <file2>"
+      # Se uma opção inválida foi fornecida, mensagem de erro
+      echo "Uso: $0 [-r] [-a] <file1> <file2>"
       exit 1
       ;;
   esac
@@ -21,54 +24,62 @@ done
 
 shift $((OPTIND - 1))
 
+# Verifica o número de argumentos
 if [ $# -ne 2 ]; then
-  echo "Usage: $0 [-r] [-a] <file1> <file2>"
+  echo "Uso: $0 [-r] [-a] <file1> <file2>"
   exit 1
 fi
 
+# Atribui argumentos a variaveis 
 file1="$1"
 file2="$2"
 
-# Ensure header is always printed first
+# Cabeçalho
 echo "SIZE NAME"
 
+# Função para comparar os tamanhos de diretórios em dois ficheiros
 compare_files() {
+  # Declara arrays para armazenar os tamanhos de diretórios
   declare -A dir_sizes1 
   declare -A dir_sizes2 
 
+  # tamanhos do primeiro ficheiro
   while read -r size dir; do
     dir_sizes1["$dir"]=$size
   done < "$file1"  
 
+  # tamanhos do segundo ficheiro
   while read -r size dir; do
-    # Check if the line contains two fields before assigning values
-    if [ -n "$size" ] && [ -n "$dir" ]; then
-      dir_sizes2["$dir"]=$size
+    if [ -n "$size" ] && [ -n "$dir" ]; then # Verifica se a linha não está vazia
+      dir_sizes2["$dir"]=$size # Adiciona o tamanho do diretório ao array
     fi
-  done < "$file2"
+  done < "$file2" 
 
+  # Compara e imprime as diferenças nos tamanhos dos diretórios
   for dir in "${!dir_sizes1[@]}"; do
     size1="${dir_sizes1[$dir]}"
     size2="${dir_sizes2[$dir]}"
 
-    if [ -z "$size2" ]; then
-      echo "-$size1 $dir REMOVED"
+    if [ -z "$size2" ]; then # Se o diretório não existe no segundo ficheiro
+      echo "-$size1 $dir REMOVED" # Se o diretório foi removido
     else
       size_diff=$((size2 - size1))
       echo "$size_diff $dir"
     fi
   done
 
+  # Verifica diretórios adicionados no segundo ficheiro
   for dir in "${!dir_sizes2[@]}"; do
     size1="${dir_sizes1[$dir]}"
-    size2="${dir_sizes2[$dir]}"
+    size2="${dir_sizes2[$dir]}" 
 
-    if [ -z "${dir_sizes1[$dir]}" ]; then
-      echo "${dir_sizes2[$dir]} $dir NEW"
+    if [ -z "${dir_sizes1[$dir]}" ]; then # Se o diretório não existe no primeiro ficheiro
+      echo "${dir_sizes2[$dir]} $dir NEW" # Se o diretório foi adicionado
     fi
   done
 }
 
+# Verifica a ordem de classificação e chama a função compare_files
 if [ "$sorting_order" == "reverse" ]; then
   compare_files "$file1" "$file2" | tac
 elif [ "$sorting_order" == "alphabetical" ]; then
