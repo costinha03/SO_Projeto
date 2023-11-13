@@ -29,8 +29,8 @@ calculate_folder_sizes() {
         folder_size=0
 
         # Calcular o tamanho da pasta considerando a expressão regular
-        while IFS= read -r file; do # Para cada arquivo
-          size=$(du -b --max-depth=0 "$file" 2>/dev/null | awk '{print $1}') # Obter o tamanho do arquivo
+        while IFS= read -r file; do 
+          size=$(du -b "$file" 2>/dev/null | awk '{print $1}') # Obter o tamanho do arquivo
           folder_size=$((folder_size + size)) # Somar o tamanho do arquivo ao tamanho da pasta
         done <<< "$matching_files" # Passar os arquivos correspondentes para o loop
 
@@ -39,13 +39,16 @@ calculate_folder_sizes() {
         fi
       else
         # Se não houver arquivos que atendam aos critérios, defina o tamanho da pasta como 0
-        echo "0 $folder"
+        if [ "$min_size" -eq 0 ]; then
+          echo "0 $folder"
+        fi
       fi
     else
       echo "NA $folder" # Permissão recusada
     fi
   done
 }
+
 
 while getopts "n:d:s:ral:" opt; do 
   case $opt in
