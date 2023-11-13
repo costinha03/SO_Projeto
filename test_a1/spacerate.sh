@@ -34,6 +34,7 @@ file2="$2"
 # Função para comparar os arquivos
 compare_files() {
 
+  echo "SIZE NAME" #imprime o cabeçalho
   declare -A dir_sizes1 
   declare -A dir_sizes2 
 
@@ -46,7 +47,6 @@ compare_files() {
     dir_sizes2["$dir"]=$size # Armazena o tamanho do diretório no array associativo dir_sizes2
   done < "$file2"
 
-  echo "SIZE NAME" #imprime o cabeçalho
   
   for dir in "${!dir_sizes1[@]}"; do # Percorre o array associativo dir_sizes1
     size1="${dir_sizes1[$dir]}" # Armazena o tamanho do diretório no array associativo dir_sizes1
