@@ -17,7 +17,7 @@ calculate_folder_sizes() {
   local search_directory="$1" # Diretório para pesquisar
 
   # Encontre todas as pastas no diretório
-  find "$search_directory" -type d 2>/dev/null | 
+  find "$search_directory" -type d 2>/dev/null |
   while read -r folder; # Para cada pasta
   do
     # Verifica a permissão de leitura na pasta
@@ -26,11 +26,15 @@ calculate_folder_sizes() {
       local matching_files=$(find "$folder" -type f -mtime +$(( ( $(date +%s) - $(date -d "$max_date" +%s) ) / 86400 )) 2>/dev/null | grep -E "$regex")
 
       if [ -n "$matching_files" ]; then
-        folder_size=$(find "$folder" -type f -exec du -b {} + 2>/dev/null | awk '{total += $1} END {print total}')
-        if [ -z "$folder_size" ]; then # Se o tamanho da pasta for indefinido (vazio), defina-o como 0
-          folder_size=0
-        fi
-        if [ "$folder_size" -ge "$min_size" ]; then # Se o tamanho da pasta for maior ou igual ao tamanho mínimo
+        folder_size=0
+
+        # Calcular o tamanho da pasta considerando a expressão regular
+        while IFS= read -r file; do
+          size=$(du -b --max-depth=0 "$file" 2>/dev/null | awk '{print $1}')
+          folder_size=$((folder_size + size))
+        done <<< "$matching_files"
+
+        if [ "$folder_size" -ge "$min_size" ]; then
           echo "$folder_size $folder" # Imprimir o tamanho e o nome da pasta
         fi
       else
@@ -42,6 +46,8 @@ calculate_folder_sizes() {
     fi
   done
 }
+
+
 
 
 while getopts "n:d:s:ral:" opt; do 
