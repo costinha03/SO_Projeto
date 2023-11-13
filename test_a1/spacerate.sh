@@ -62,6 +62,9 @@ compare_files() {
 
   # Diretorios presentes apenas no segundo arquivo
   for dir in "${!dir_sizes2[@]}"; do # Percorre o array associativo dir_sizes2
+  size1="${dir_sizes1[$dir]}" # Armazena o tamanho do diretório no array associativo dir_sizes1
+  size2="${dir_sizes2[$dir]}" # Armazena o tamanho do diretório no array associativo dir_sizes2
+  size_diff=$((size2 - size1))
     if [ -z "${dir_sizes1[$dir]}" ]; then # Se o tamanho do diretório for vazio (não presente no primeiro arquivo)  
       echo "$size2 $dir NEW" # Imprime o tamanho do diretório e o nome do diretório com a mensagem NEW
     fi
