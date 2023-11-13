@@ -34,7 +34,6 @@ file2="$2"
 # Função para comparar os arquivos
 compare_files() {
 
-  echo "SIZE NAME" #imprime o cabeçalho
   declare -A dir_sizes1 
   declare -A dir_sizes2 
 
@@ -47,15 +46,18 @@ compare_files() {
     dir_sizes2["$dir"]=$size # Armazena o tamanho do diretório no array associativo dir_sizes2
   done < "$file2"
 
+  echo "SIZE NAME" #imprime o cabeçãlho
   
   for dir in "${!dir_sizes1[@]}"; do # Percorre o array associativo dir_sizes1
     size1="${dir_sizes1[$dir]}" # Armazena o tamanho do diretório no array associativo dir_sizes1
     size2="${dir_sizes2[$dir]}" # Armazena o tamanho do diretório no array associativo dir_sizes2
-    size_diff=$((size2 - size1))
-    if [ -z "$size2" ]; then # Diretorio presente apenas no primeiro arquivo
-        echo "$size_diff $dir REMOVED" # Imprime o tamanho do diretório e o nome do diretório com a mensagem REMOVED
+
+    if [ -z "$size2" ]; then
+      # Diretorio presente apenas no primeiro arquivo
+      echo "$size_diff $dir REMOVED" # Imprime o tamanho do diretório e o nome do diretório com a mensagem REMOVED
     else
       # Diretorio presente em ambos os arquivos
+      size_diff=$((size2 - size1)) # Calcula a diferença entre os tamanhos dos diretórios (size2 - size1)
       echo "$size_diff $dir" # Imprime a diferença entre os tamanhos dos diretórios e o nome do diretório
     fi
   done
@@ -64,9 +66,9 @@ compare_files() {
   for dir in "${!dir_sizes2[@]}"; do # Percorre o array associativo dir_sizes2
     size1="${dir_sizes1[$dir]}" # Armazena o tamanho do diretório no array associativo dir_sizes1
     size2="${dir_sizes2[$dir]}" # Armazena o tamanho do diretório no array associativo dir_sizes2
-    size_diff=$((size2 - size1))
-    if [ -z "${dir_sizes1[$dir]}" ]; then # Se o tamanho do diretório for vazio (não presente no primeiro arquivo)  
-      echo "$size2 $dir NEW" # Imprime o tamanho do diretório e o nome do diretório com a mensagem NEW
+
+    if [ -z "${dir_sizes1[$dir]}" ]; then # Se o tamanho do diretório for vazio (não presente no primeiro arquivo)
+      echo "${dir_sizes2[$dir]} $dir NEW" # Imprime o tamanho do diretório e o nome do diretório com a mensagem NEW
     fi
   done
 }
@@ -80,4 +82,3 @@ else
 # Se a ordem for padrão
   compare_files "$file1" "$file2" # Imprime o tamanho e o nome do diretório 
 fi
-
